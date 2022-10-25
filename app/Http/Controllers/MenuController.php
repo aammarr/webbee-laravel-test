@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MenuItem;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\DB;
 
 class MenuController extends BaseController
 {
@@ -93,6 +94,45 @@ class MenuController extends BaseController
      */
 
     public function getMenuItems() {
+        $MenuItem = DB::table('menu_items as parent_menu')
+            ->selectRaw('parent_menu.id, parent_menu.name, parent_menu.url, parent_menu.parent_id,parent_menu.created_at,parent_menu.updated_at,child_menu.id as child_menuid, child_menu.name as child_menuname, child_menu.url as child_menuurl, child_menu.parent_id as child_menupid,child_menu.created_at as child_menucr,child_menu.updated_at as child_menuup')
+            ->join('menu_items AS child_menu','child_menu.parent_id','=','parent_menu.id')
+            ->get();
+
+        $arr = [];
+        foreach ($MenuItem as $key => $item) {
+            if ($item->parent_id == null) {
+                $arr[] = [
+                    'id'         => $item->id,
+                    'name'       => $item->name,
+                    'parent_id'  => $item->parent_id,
+                    'url'        => $item->url,
+                    'created_at' => $item->created_at,
+                    'updated_at' => $item->updated_at,
+                    'children'   => $this->getChildren($MenuItem, $item->id)
+                ];
+            }
+        }
+        return json_encode($arr);
         throw new \Exception('implement in coding task 3');
+    }
+
+    public function getChildren($arr, $parent_id)
+    {
+        $child = [];
+        foreach ($arr as $item) {
+            if ($item->parent_id == $parent_id) {
+                $child = [
+                    'id'         => $item->id,
+                    'name'       => $item->name,
+                    'parent_id'  => $item->parent_id,
+                    'url'        => $item->url,
+                    'created_at' => $item->created_at,
+                    'updated_at' => $item->updated_at,
+                    'children'   => $this->getChildren([$item], $item->id)
+                ];
+            }
+        }
+        return $child;
     }
 }
