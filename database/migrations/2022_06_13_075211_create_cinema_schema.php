@@ -36,6 +36,32 @@ class CreateCinemaSchema extends Migration
      */
     public function up()
     {
+        Schema::create('movies', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->string('duration');
+            $table->timestamps();
+        });
+        Schema::create('show_details', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedInteger('movie_id');
+            $table->dateTime('start_at');
+            $table->dateTime('end_at');
+            $table->string('vip_slot_percentage');
+            $table->unsignedSmallInteger('price');
+            $table->unsignedSmallInteger('capacity');
+            $table->unsignedSmallInteger('total_bookings');
+            $table->timestamps();
+        });
+        Schema::create('show_bookings', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedInteger('show_detail_id');
+            $table->unsignedInteger('user_id');
+            $table->string('seat_number');
+            $table->unsignedTinyInteger('status');
+            $table->timestamp('booked_at');
+            $table->timestamps();
+        });
         throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
     }
 
@@ -46,5 +72,8 @@ class CreateCinemaSchema extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('movies');
+        Schema::dropIfExists('show_details');
+        Schema::dropIfExists('show_bookings');
     }
 }
